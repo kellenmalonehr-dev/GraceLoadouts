@@ -1,0 +1,17 @@
+# Fetched by setup.ps1
+deps/
+tools/
+
+# Build outputs (contain files derived from the game; never commit them)
+mod/
+mod-*/
+out/
+release/staging/
+release/dist/
+src/**/bin/
+src/**/obj/
+src/GraceLoadouts.Dll/target/
+
+# Local scratch
+work/
+*.user

@@ -1,0 +1,26 @@
+# Grace Loadouts: the native half of the mod. The grace menu asks for a loadout through event
+# flags; this DLL, run once per frame on the game's own task loop, saves or equips it.
+#
+# Game structures come from fromsoftware-rs (vswarte et al., MIT OR Apache-2.0 with a no-AI-training
+# clause), pinned to a commit that supports Elden Ring 2.7.2.0.
+[package]
+name = "grace_loadouts"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+eldenring = { git = "https://github.com/vswarte/fromsoftware-rs", rev = "57023153d786c4b13fe95d9170e6dcd9d35093ea" }
+fromsoftware-shared = { git = "https://github.com/vswarte/fromsoftware-rs", rev = "57023153d786c4b13fe95d9170e6dcd9d35093ea" }
+pelite = "0.10"
+windows = { version = "0.61", features = ["Win32_Foundation", "Win32_System_LibraryLoader", "Win32_System_SystemServices"] }
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
+# Panics unwind so the frame task can catch them (see lib.rs) instead of taking the game down.
