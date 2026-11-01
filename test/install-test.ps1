@@ -18,6 +18,12 @@ if (Get-Process eldenring -ErrorAction SilentlyContinue) { throw "Close Elden Ri
 
 if ($Uninstall) {
     if (-not (Test-Path $backup)) { throw "No backup at $backup; nothing to restore." }
+    # Files Seeker's Compass didn't have are listed in added.txt and removed instead of restored.
+    $added = Join-Path $backup "added.txt"
+    if (Test-Path $added) {
+        foreach ($f in Get-Content $added) { $p = Join-Path $compass $f; if (Test-Path $p) { Remove-Item $p } }
+        Remove-Item $added
+    }
     Copy-Item (Join-Path $backup "*") $compass -Recurse -Force
     Remove-Item $backup -Recurse -Force
     if (Test-Path $dll) { Remove-Item $dll }
@@ -32,13 +38,16 @@ foreach ($p in $src, $built) { if (-not (Test-Path $p)) { throw "Missing $p; bui
 # Back up exactly the files we replace, once (a second install keeps the original backup).
 $files = Get-ChildItem $src -Recurse -File | ForEach-Object { $_.FullName.Substring($src.Length + 1) }
 if (-not (Test-Path $backup)) {
+    New-Item -ItemType Directory -Force $backup | Out-Null
+    $added = @()
     foreach ($f in $files) {
         $from = Join-Path $compass $f
-        if (-not (Test-Path $from)) { continue }
+        if (-not (Test-Path $from)) { $added += $f; continue }
         $to = Join-Path $backup $f
         New-Item -ItemType Directory -Force (Split-Path $to) | Out-Null
         Copy-Item $from $to
     }
+    Set-Content (Join-Path $backup "added.txt") $added -Encoding utf8
     Write-Host "Backed up $((Get-ChildItem $backup -Recurse -File).Count) files to $backup"
 }
 foreach ($f in $files) {
