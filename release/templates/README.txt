@@ -65,3 +65,8 @@ COMPATIBILITY
   its place in their menu, the installer says so and leaves that profile alone.
 - After a game patch, if the equip code moved, Grace Loadouts turns itself off and says so in
   grace_loadouts.log until it's updated.
+
+SOURCE
+https://github.com/kellenmalonehr-dev/GraceLoadouts
+(the game-folder loader in GameFolder\ is Mod Engine 3's code, built from
+https://github.com/kellenmalonehr-dev/SeekersCompass, src/SeekersCompass.Loader)
