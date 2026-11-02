@@ -27,6 +27,28 @@
 - Weapons record their gaitem handle, so the same copy (upgrade, ash of war) is picked when several
   are carried; otherwise the first copy with the same item id is used.
 
+## Installing next to other menu mods
+- Only one copy of the talk script and of each menu text file can be used, and Convergence and
+  Seeker's Compass replace them too. Shipping pre-merged copies would tie each release to one
+  version of every other mod, so the installers merge on the player's PC instead:
+  `GraceLoadouts-merge.exe` (the generator's `merge` command, published self-contained) applies the
+  same patch to the other mods' copies, falling back to the zip's standalone menu for files they
+  don't have. Players don't have the game unpacked, which is why the fallback is the standalone
+  menu and not vanilla.
+- It uses the game's own `oo2core_6_win64.dll` (the one Oodle every player has);
+  `patches/soulsformats-oodle26-no-printf.patch` lets SoulsFormatsNEXT load it.
+- **Mod Engine 3 profiles** (`GraceLoadouts-setup.ps1`): packages in the profile that have menu
+  files form the base, in load order (later wins); the merged copy goes to `merged/<fingerprint>`
+  (size and time of every base file, so profiles with the same mods share one) and loads after
+  them. The block carries `# setup: <script>` so Seeker's Compass's setup and launcher can call
+  `-Action refresh` after changing the profile.
+- **Game folder** (`GraceLoadouts-gamefolder.ps1`): Seeker's Compass's game-folder loader, shared
+  through `Game\OfflineMods` (`package.ini` per mod, newer `loader-version.txt` wins). Our
+  package.ini records the base file's size and time; if that mod changes without telling us,
+  the loader falls back to our standalone menu instead of loading a stale merge.
+- `grace_loadouts.dll` takes a per-process mutex, so a second copy (say in Elden Mod Loader's
+  folder too) stays off instead of doing every request twice.
+
 ## Storage
 - Loadouts are text files in `loadouts/` beside the DLL, named by save slot and character name. They
   aren't in the save file, so they follow neither a character copied to another save nor a renamed one.

@@ -6,9 +6,16 @@ static class Program
 {
     /// Elden Ring's Game folder: GRACELOADOUTS_GAME, else found through Steam's library list.
     /// Its event/msg/script folders must be unpacked (e.g. with UXM Selective Unpack).
-    public static readonly string GameDir = Environment.GetEnvironmentVariable("GRACELOADOUTS_GAME") ?? Steam.FindGameDir()
-        ?? throw new Exception("Elden Ring not found; set GRACELOADOUTS_GAME to its ...\\ELDEN RING\\Game folder.");
-    public static readonly string Root = FindRoot();
+    /// (merge sets it to the standalone menu folder instead.)
+    public static string GameDir
+    {
+        get => gameDir ??= Environment.GetEnvironmentVariable("GRACELOADOUTS_GAME") ?? Steam.FindGameDir()
+            ?? throw new Exception("Elden Ring not found; set GRACELOADOUTS_GAME to its ...\\ELDEN RING\\Game folder.");
+        set => gameDir = value;
+    }
+    static string gameDir;
+    public static string Root => root ??= FindRoot();
+    static string root;
 
     /// Optional base layer (another mod's folder, e.g. Convergence or Seeker's Compass). When set,
     /// every input file the base provides replaces vanilla's, so the output is merged on top of it.
@@ -41,8 +48,16 @@ static class Program
 
     static int Main(string[] args)
     {
-        // SoulsFormats needs Oodle 8+ for DCX (ER's own oo2core_6 lacks the exports it probes), so
-        // borrow a newer copy: GRACELOADOUTS_OODLE, else any oo2core_8/9 shipped by an installed Steam game.
+        string cmd = args.Length > 0 ? args[0] : "build";
+        // On players' PCs: the game's own Oodle (patched SoulsFormats), no project folder.
+        if (cmd == "merge")
+        {
+            try { Merge.Run(args.Skip(1).ToArray()); return 0; }
+            catch (Exception e) { Console.Error.WriteLine($"merge failed: {e.Message}"); return 1; }
+        }
+
+        // Unmodified SoulsFormats needed Oodle 8+ (ER's own oo2core_6 lacks an export it probed), so
+        // the build borrows a newer copy: GRACELOADOUTS_OODLE, else any oo2core_8/9 shipped by an installed Steam game.
         if (!Directory.GetFiles(AppContext.BaseDirectory, "oo2core_*_win64.dll").Any(f => !f.Contains("oo2core_6")))
         {
             string src = Environment.GetEnvironmentVariable("GRACELOADOUTS_OODLE") ?? Steam.FindOodle()
@@ -50,7 +65,6 @@ static class Program
             File.Copy(src, Path.Combine(AppContext.BaseDirectory, Path.GetFileName(src)));
         }
 
-        string cmd = args.Length > 0 ? args[0] : "build";
         switch (cmd)
         {
             case "build": Builder.Run(args.Skip(1).ToArray()); return 0;

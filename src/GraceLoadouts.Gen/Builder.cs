@@ -34,7 +34,7 @@ static class Builder
         {
             var talkText = GraceMenu.Texts(new Texts(lang));
             Directory.CreateDirectory(Path.Combine(mod, "msg", lang));
-            foreach (var bnd in new[] { "menu.msgbnd.dcx", "menu_dlc01.msgbnd.dcx", "menu_dlc02.msgbnd.dcx" })
+            foreach (var bnd in MenuBnds)
                 PatchFmgs(Program.In("msg", lang, bnd), Path.Combine(mod, "msg", lang, bnd), fmgName =>
                     fmgName == "EventTextForTalk" ? talkText : null);
         }
@@ -43,7 +43,10 @@ static class Builder
         GraceMenu.Build(mod);
     }
 
-    static void PatchFmgs(string src, string dst, Func<string, Dictionary<int, string>> entriesFor)
+    /// The text archives that hold talk-menu lines (EventTextForTalk), per language.
+    public static readonly string[] MenuBnds = { "menu.msgbnd.dcx", "menu_dlc01.msgbnd.dcx", "menu_dlc02.msgbnd.dcx" };
+
+    public static void PatchFmgs(string src, string dst, Func<string, Dictionary<int, string>> entriesFor)
     {
         var bnd = BND4.Read(src);
         foreach (var f in bnd.Files)

@@ -5,7 +5,7 @@
 # clause), pinned to a commit that supports Elden Ring 2.7.2.0.
 [package]
 name = "grace_loadouts"
-version = "0.1.0"
+version = "1.0.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 publish = false
@@ -17,7 +17,7 @@ crate-type = ["cdylib"]
 eldenring = { git = "https://github.com/vswarte/fromsoftware-rs", rev = "57023153d786c4b13fe95d9170e6dcd9d35093ea" }
 fromsoftware-shared = { git = "https://github.com/vswarte/fromsoftware-rs", rev = "57023153d786c4b13fe95d9170e6dcd9d35093ea" }
 pelite = "0.10"
-windows = { version = "0.61", features = ["Win32_Foundation", "Win32_System_LibraryLoader", "Win32_System_SystemServices"] }
+windows = { version = "0.61", features = ["Win32_Foundation", "Win32_System_LibraryLoader", "Win32_System_SystemServices", "Win32_System_Threading", "Win32_Security"] }
 
 [profile.release]
 strip = true

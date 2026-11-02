@@ -16,7 +16,9 @@ Works offline, with Seamless Co-op and with Convergence. It is not for the offic
 |---|---|
 | `src/GraceLoadouts.Gen` | C# generator: patches the grace talk script (`t000001000`) and adds the menu text in every game language |
 | `src/GraceLoadouts.Dll` | Rust DLL: watches the menu's event flags on the game's frame loop and saves/equips |
-| `test/install-test.ps1` | Developer test install on top of an installed Seeker's Compass (not for players) |
+| `release/templates` | Players' install scripts and README (Mod Engine 3 profiles, or the game folder without Mod Engine) |
+| `release/package.ps1` | Builds the release zip: standalone menu, DLL, `GraceLoadouts-merge.exe`, the game-folder loader |
+| `test/install-test.ps1` | Developer test install on top of an installed Seeker's Compass 1.2 (not for players) |
 | `DESIGN.md` | Why it works the way it does |
 
 ## Building
@@ -29,11 +31,15 @@ Works offline, with Seamless Co-op and with Convergence. It is not for the offic
    - `--out <folder>` (default `mod`).
    - `freeflags [--base <folder>]` lists unreferenced event flags in the 78xxx block.
 4. DLL: `bash src/GraceLoadouts.Dll/build.sh` (Rust with the windows-gnu host) → `out/GraceLoadouts/`.
+5. Release zip: build Seeker's Compass's game-folder loader (`bash src/SeekersCompass.Loader/build.sh` in
+   the BuildCompass repo next to this one), then
+   `powershell -ExecutionPolicy Bypass -File release\package.ps1 -Version 1.0.0` → `release/dist/`.
 
 ## Compatibility
 
-- The menu replaces the grace talk script and the `menu*.msgbnd.dcx` text, like Seeker's Compass. Build
-  with `--base` on top of any other mod that changes those files.
+- The menu replaces the grace talk script and the `menu*.msgbnd.dcx` text, like Seeker's Compass and
+  Convergence. Players' installers merge it onto those mods' copies (`merge` command, see DESIGN.md);
+  for development, build with `--base` on top of them.
 - The equip routines are found by byte pattern. After a game patch the DLL logs whether they were
   found (`grace_loadouts.log`) and stays off if not; the fromsoftware-rs pin may also need updating.
 
@@ -41,6 +47,8 @@ Works offline, with Seamless Co-op and with Convergence. It is not for the offic
 
 - [fromsoftware-rs](https://github.com/vswarte/fromsoftware-rs) (vswarte and contributors) for game
   structures and the frame-task hook
+- [Mod Engine 3](https://github.com/garyttierney/me3) (garyttierney and contributors), whose mod host
+  the game-folder loader reuses (MIT OR Apache-2.0)
 - [The Grand Archives Elden Ring cheat table](https://github.com/The-Grand-Archives/Elden-Ring-CT-TGA),
   whose `equipItem`/`changeMagic` scripts document the equip routines and their patterns
 - [SoulsFormatsNEXT](https://github.com/soulsmods/SoulsFormatsNEXT) and [Paramdex](https://github.com/soulsmods/Paramdex) (soulsmods)

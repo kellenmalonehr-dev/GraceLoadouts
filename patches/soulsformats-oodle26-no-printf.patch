@@ -1,0 +1,26 @@
+Lets SoulsFormatsNEXT use Elden Ring's own oo2core_6_win64.dll, which has no
+OodleCore_Plugins_SetPrintf export (only used to silence a version warning). The installer's
+menu merge runs on players' PCs, where the game's own Oodle is the only one guaranteed.
+
+diff --git a/SoulsFormats/Utilities/Compression/Oodle/OodleCompressor.cs b/SoulsFormats/Utilities/Compression/Oodle/OodleCompressor.cs
+index 61be331..278edc7 100644
+--- a/SoulsFormats/Utilities/Compression/Oodle/OodleCompressor.cs
++++ b/SoulsFormats/Utilities/Compression/Oodle/OodleCompressor.cs
+@@ -52,13 +52,14 @@ namespace SoulsFormats
+         public static uint QueryVersion(IntPtr handle)
+         {
+             IntPtr checkVersion = InteropNativeLibrary.GetExport(handle, "Oodle_CheckVersion");
+-            IntPtr setPrintf = InteropNativeLibrary.GetExport(handle, "OodleCore_Plugins_SetPrintf");
++            // Elden Ring's own oo2core_6 has no OodleCore_Plugins_SetPrintf: then just don't silence it.
++            InteropNativeLibrary.TryGetExport(handle, "OodleCore_Plugins_SetPrintf", out IntPtr setPrintf);
+ 
+             // Oodle prints a warning here, so we disable the logging
+-            IntPtr printf = ((delegate* unmanaged<IntPtr, IntPtr>)setPrintf)(IntPtr.Zero);
++            IntPtr printf = setPrintf != IntPtr.Zero ? ((delegate* unmanaged<IntPtr, IntPtr>)setPrintf)(IntPtr.Zero) : IntPtr.Zero;
+             uint libVersion = 0;
+             ((delegate* unmanaged<uint, uint*, int>)checkVersion)(0, &libVersion);
+-            ((delegate* unmanaged<IntPtr, IntPtr>)setPrintf)(printf);
++            if (setPrintf != IntPtr.Zero) ((delegate* unmanaged<IntPtr, IntPtr>)setPrintf)(printf);
+ 
+             return libVersion;
+         }

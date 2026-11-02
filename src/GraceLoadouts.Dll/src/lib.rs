@@ -21,9 +21,11 @@ use std::time::Duration;
 use eldenring::cs::{CSEventFlagMan, CSTaskGroupIndex, CSTaskImp, GameDataMan, GameMan, WorldChrMan};
 use eldenring::fd4::FD4TaskData;
 use fromsoftware_shared::{FromStatic, SharedTaskImpExt};
-use windows::Win32::Foundation::HMODULE;
+use windows::Win32::Foundation::{ERROR_ALREADY_EXISTS, GetLastError, HMODULE};
 use windows::Win32::System::LibraryLoader::GetModuleFileNameW;
 use windows::Win32::System::SystemServices::DLL_PROCESS_ATTACH;
+use windows::Win32::System::Threading::CreateMutexW;
+use windows::core::PCWSTR;
 
 use crate::store::Store;
 
@@ -61,6 +63,15 @@ pub unsafe extern "system" fn DllMain(module: HMODULE, reason: u32, _: *mut ()) 
 
 fn start() {
     log::line(&format!("Grace Loadouts {} loaded", env!("CARGO_PKG_VERSION")));
+    // Two loaders may both load a copy (say Mod Engine and Elden Mod Loader); only the first acts,
+    // or every request would be done twice. The mutex lives as long as the game.
+    let name: Vec<u16> = format!("Local\\GraceLoadouts.{}\0", std::process::id()).encode_utf16().collect();
+    let first = unsafe { CreateMutexW(None, false, PCWSTR(name.as_ptr())) }.is_ok()
+        && unsafe { GetLastError() } != ERROR_ALREADY_EXISTS;
+    if !first {
+        log::line("another copy of grace_loadouts.dll is already running in this game; this one stays off");
+        return;
+    }
     let calls = match equip::GameCalls::find() {
         Ok(c) => c,
         Err(e) => {

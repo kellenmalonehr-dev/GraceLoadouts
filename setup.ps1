@@ -1,7 +1,7 @@
 # Fetches the build dependencies at the exact versions this project was built and tested with.
 #   powershell -ExecutionPolicy Bypass -File setup.ps1
 # - deps/SoulsFormatsNEXT, deps/Paramdex (git, pinned commits; same pins as Seeker's Compass)
-# - patches/soulsformats-ignore-orphaned-bits.patch applied to SoulsFormatsNEXT
+# - patches/soulsformats-*.patch applied to SoulsFormatsNEXT
 # - tools/zig (Zig 0.13.0, the assembler stand-in for the DLL build)
 # The DLL's Rust crates (fromsoftware-rs, pinned in its Cargo.toml) are fetched by cargo.
 $ErrorActionPreference = "Stop"
@@ -29,6 +29,11 @@ $patch = Join-Path $root "patches\soulsformats-ignore-orphaned-bits.patch"
 $row = Join-Path $sf "SoulsFormats\Formats\PARAM\PARAM\Row.cs"
 if (Select-String -Path $row -Pattern "IgnoreOrphanedBits" -Quiet) { Write-Host "SoulsFormatsNEXT: patch already applied" }
 else { git -C $sf apply $patch; Write-Host "SoulsFormatsNEXT: patch applied" }
+# The installer's menu merge must run with the game's own oo2core_6 (see the patch header).
+$patch = Join-Path $root "patches\soulsformats-oodle26-no-printf.patch"
+$oodle = Join-Path $sf "SoulsFormats\Utilities\Compression\Oodle\OodleCompressor.cs"
+if (Select-String -Path $oodle -Pattern "TryGetExport" -Quiet) { Write-Host "SoulsFormatsNEXT: Oodle patch already applied" }
+else { git -C $sf apply $patch; Write-Host "SoulsFormatsNEXT: Oodle patch applied" }
 
 # Checked against ziglang.org's published SHA-256.
 $zig = Join-Path $root "tools\zig\zig.exe"

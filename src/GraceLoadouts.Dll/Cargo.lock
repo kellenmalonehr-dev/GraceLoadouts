@@ -173,7 +173,7 @@ checksum = "54af5066834d6c2d404eb26ea036a15b15d9ff80db510b9a73ff95ab07f30831"
 
 [[package]]
 name = "grace_loadouts"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "eldenring",
  "fromsoftware-shared",
